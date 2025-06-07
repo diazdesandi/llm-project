@@ -1,0 +1,21 @@
+# Node
+node_modules/
+dist/
+
+# Go
+bin/
+*.exe
+
+# Python (por si usas algo para Ollama scripts)
+__pycache__/
+*.pyc
+
+# Docker
+*.env
+.env.*
+docker-compose.override.yml
+
+# Mac & Editor garbage
+.DS_Store
+.vscode/
+.idea/
