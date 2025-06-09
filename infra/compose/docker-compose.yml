@@ -1,8 +1,10 @@
-version: '3.9'
 services:
-
   frontend:
-    build: ./frontend
+    build:
+      context: ../../frontend
+      dockerfile: ../infra/docker/frontend/Dockerfile
+    env_file:
+      - .env
     ports:
       - "4200:4200"
     depends_on:
@@ -11,12 +13,17 @@ services:
       - llmnet
 
   backend:
-    build: ./backend
+    build:
+      context: ../../backend
+      dockerfile: ../infra/docker/backend/Dockerfile
+    env_file:
+      - ../../backend/.env
     ports:
-      - "3000:3000"
+      - "8080:8080"
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/mydb
-      - OLLAMA_URL=http://ollama:11434
+      - PORT=${PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - OLLAMA_URL=${OLLAMA_URL}
     depends_on:
       - db
       - ollama
@@ -34,10 +41,12 @@ services:
 
   db:
     image: postgres:15
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydb
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
@@ -57,7 +66,7 @@ services:
   prometheus:
     image: prom/prometheus
     volumes:
-      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     networks:
