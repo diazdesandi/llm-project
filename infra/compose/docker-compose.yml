@@ -58,8 +58,20 @@ services:
     image: grafana/grafana
     ports:
       - "3001:3000"
+    env_file:
+      - .env
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED}
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=${GF_AUTH_ANONYMOUS_ORG_ROLE}
+      - GF_AUTH_ANONYMOUS_ORG_NAME=${GF_AUTH_ANONYMOUS_ORG_NAME}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_SECURITY_ALLOW_EMBEDDING=${GF_SECURITY_ALLOW_EMBEDDING}
+      - GF_AUTH_DISABLE_LOGIN_FORM=${GF_AUTH_DISABLE_LOGIN_FORM}
     volumes:
       - grafana-data:/var/lib/grafana
+      - ../grafana/dashboards:/var/lib/grafana/dashboards
+      - ../grafana/datasources:/etc/grafana/provisioning/datasources
+      - ../grafana/datasources/dashboard-provider.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
     networks:
       - llmnet
 
