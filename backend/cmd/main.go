@@ -154,7 +154,7 @@ func main() {
 		databaseURL = "localhost:5432"
 	}
 	if ollamaURL == "" {
-		ollamaURL = "localhost:11434"
+		ollamaURL = "http://ollama:11434"
 	}
 
 	l.Info(port)

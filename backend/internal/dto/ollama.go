@@ -3,9 +3,9 @@ package dto
 import "time"
 
 type OllamaRequest struct {
-	Model  string `path:"model" maxLength:"30" required:"true" example:"tinyllama:latest"`
-	Prompt string `path:"prompt" required:"true" example:"Tell me an interesting fact about Tijuana, Mexico"`
-	Stream bool   `path:"stream" required:"true"`
+	Model  string `json:"model" maxLength:"30" required:"true" example:"tinyllama:latest" default:"tinyllama"`
+	Prompt string `json:"prompt" required:"true" example:"Tell me an interesting fact about Tijuana, Mexico"`
+	Stream bool   `json:"stream" required:"true"`
 }
 
 type OllamaResponse struct {

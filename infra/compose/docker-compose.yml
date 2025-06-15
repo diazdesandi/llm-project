@@ -25,17 +25,48 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - OLLAMA_URL=${OLLAMA_URL}
     depends_on:
-      - db
-      - ollama
+      db:
+        condition: service_started
+      ollama:
+        condition: service_healthy
     networks:
       - llmnet
 
   ollama:
-    image: ollama/ollama
+    image: ollama/ollama:latest
     ports:
       - "11434:11434"
+    environment:
+      - OLLAMA_MODELS=${OLLAMA_MODELS}
     volumes:
       - ollama-data:/root/.ollama
+    restart: unless-stopped
+    entrypoint: 
+      - sh
+      - -c
+      - |
+        ollama serve &
+        SERVER_PID=$$!
+        echo 'Waiting for Ollama server to start...'
+        sleep 15
+        until ollama list >/dev/null 2>&1; do
+          echo 'Waiting for Ollama to be ready...'
+          sleep 2
+        done
+        if ! ollama list | grep -q tinyllama; then
+          echo 'Pulling tinyllama model...'
+          ollama pull tinyllama
+          echo 'Model pulled successfully!'
+        else
+          echo 'tinyllama model already exists, skipping pull'
+        fi
+        wait $$SERVER_PID
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
     networks:
       - llmnet
 
