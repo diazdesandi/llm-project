@@ -9,6 +9,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	"github.com/danielgtaylor/huma/v2/humacli"
+	"github.com/diazdesandi/llm-project/backend/internal/routes"
 	"github.com/diazdesandi/llm-project/backend/pkg/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -164,6 +165,7 @@ func main() {
 
 		router := chi.NewMux()
 		api := humachi.New(router, huma.DefaultConfig("Backend - LLM", version))
+		routes.RegisterOllamaRoutes(api)
 
 		huma.Get(api, "/greeting/{name}", func(ctx context.Context, input *Body) (*GreetingOutput, error) {
 			serviceName := "llm-backend"
