@@ -1,5 +1,6 @@
 PROJECT_NAME = llm-stack
 COMPOSE_FILE = infra/compose/docker-compose.yml
+BAKE_FILE = infra/compose/docker-bake.hcl
 COMPOSE_CMD = docker-compose -f $(COMPOSE_FILE) -p $(PROJECT_NAME)
 
 up:
@@ -11,6 +12,10 @@ down:
 logs:
 	$(COMPOSE_CMD) logs -f
 
+build:
+	docker buildx bake -f $(BAKE_FILE)
+
 restart:
-	$(COMPOSE_CMD) down -v
-	$(COMPOSE_CMD) up --build
+	$(MAKE) down
+	docker buildx bake -f $(BAKE_FILE)
+	$(MAKE) up
