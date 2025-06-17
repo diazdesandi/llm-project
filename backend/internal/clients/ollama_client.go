@@ -57,9 +57,6 @@ func OllamaClient(body *dto.OllamaRequest) (*dto.OllamaResponse, error) {
 		return nil, fmt.Errorf("failed to read response: %w", err)
 	}
 
-	// DEBUG: Print the raw response from Ollama
-	fmt.Printf("Raw Ollama response: %s\n", respBody)
-
 	// Check HTTP status code
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("ollama API error %s: %s", response.Status, string(respBody))
