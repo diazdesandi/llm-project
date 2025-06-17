@@ -11,7 +11,13 @@ import (
 	"github.com/diazdesandi/llm-project/backend/internal/dto"
 )
 
-var endpoint = "http://ollama:11434/api/generate" // Corrected Ollama API endpoint
+// TODO: Refactor, implement main.go logger
+func getOllamaEndpoint() string {
+	if endpoint := os.Getenv("OLLAMA_URL"); endpoint != "" {
+		return endpoint + "/api/generate"
+	}
+	return "http://ollama:11434/api/generate"
+}
 
 func getDefaultModel() string {
 	if model := os.Getenv("OLLAMA_MODEL"); model != "" {
@@ -20,12 +26,15 @@ func getDefaultModel() string {
 	return "tinyllama"
 }
 
-// TODO: Refactor for env variable.
 func OllamaClient(body *dto.OllamaRequest) (*dto.OllamaResponse, error) {
 
 	// Validate model
 	if body.Model == "" {
 		body.Model = getDefaultModel()
+	}
+
+	if body.Prompt == "" {
+		return nil, fmt.Errorf("Prompt is empty")
 	}
 
 	// Marshal the body to JSON
@@ -35,30 +44,30 @@ func OllamaClient(body *dto.OllamaRequest) (*dto.OllamaResponse, error) {
 	}
 
 	// Ollama endpoint POST request
-	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonBody))
+	endpoint := getOllamaEndpoint()
+	response, err := http.Post(endpoint, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new request: %w", err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
+	defer response.Body.Close()
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	respBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
+		return nil, fmt.Errorf("failed to read response: %w", err)
 	}
-	defer resp.Body.Close()
+
+	// DEBUG: Print the raw response from Ollama
+	fmt.Printf("Raw Ollama response: %s\n", respBody)
 
 	// Check HTTP status code
-	if resp.StatusCode != http.StatusOK {
-		// Attempt to read error body for more details, if any
-		errorBodyBytes, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("ollama API request failed with status %s: %s", resp.Status, string(errorBodyBytes))
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("ollama API error %s: %s", response.Status, string(respBody))
 	}
 
-	// Decode the response into OllamaResponse
+	// Decode for type checking
 	var ollamaResp dto.OllamaResponse
-	if err := json.NewDecoder(resp.Body).Decode(&ollamaResp); err != nil {
+	if err := json.Unmarshal(respBody, &ollamaResp); err != nil {
 		return nil, fmt.Errorf("failed to decode ollama response: %w", err)
 	}
 
