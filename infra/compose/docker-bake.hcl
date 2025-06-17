@@ -11,7 +11,7 @@ target "frontend" {
 
 target "backend" {
   context = "./backend"
-  dockerfile = "../infra/docker/backend/Dockerfile"
+  dockerfile = "../infra/docker/backend/Dockerfile.dev"
   tags = ["llm-backend:latest"]
   output = ["type=docker"]
 }

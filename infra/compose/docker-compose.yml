@@ -1,8 +1,6 @@
 services:
   frontend:
-    build:
-      context: ../../frontend
-      dockerfile: ../infra/docker/frontend/Dockerfile
+    image: llm-frontend:latest  # Usa la imagen construida por bake
     env_file:
       - .env
     ports:
@@ -13,13 +11,14 @@ services:
       - llmnet
 
   backend:
-    build:
-      context: ../../backend
-      dockerfile: ../infra/docker/backend/Dockerfile
+    image: llm-backend:latest  # Usa la imagen construida por bake
     env_file:
       - ../../backend/.env
     ports:
       - "8080:8080"
+    volumes:
+      - ../../backend:/app      # Volumen necesario para air
+      - /app/tmp               # Excluir directorio tmp
     environment:
       - PORT=${PORT}
       - DATABASE_URL=${DATABASE_URL}
