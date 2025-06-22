@@ -4,7 +4,11 @@ services:
     env_file:
       - .env
     ports:
-      - "4200:4200"
+      - "5173:5173"
+    volumes:                
+      - ../../frontend:/app
+      - /app/node_modules   
+      - /app/.bun       
     depends_on:
       - backend
     networks:
