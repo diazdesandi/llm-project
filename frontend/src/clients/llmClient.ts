@@ -5,7 +5,7 @@ const baseUrl = new URL("http://localhost:8080/model");
 
 export const questionOllama = async (body: OllamaBody): Promise<any> => {
     try {
-        const resp = await ky.post("http://localhost:8080/model", {
+        const resp = await ky.post(baseUrl, {
             json: body,
             headers: {
                 "Content-Type": "application/json",

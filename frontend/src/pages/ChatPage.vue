@@ -1,99 +1,59 @@
+<script lang="ts">
+export const iframeHeight = '800px'
+export const description = 'A floating sidebar with submenus.'
+</script>
+
 <script setup lang="ts">
-import { Send, LoaderCircle } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
-import { cn } from '@/lib/utils'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import CardComponent from '@/components/common/CardComponent.vue'
+import AppSidebar from '@/components/common/SidebarComponent.vue';
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { questionOllama } from '@/clients/llmClient'
-import type { Message } from '@/types'
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
+import { Separator } from '@/components/ui/separator'
 
 
-// TODO: Breakdown the entire page into components
-
-const input = ref('')
-const inputLength = computed(() => input.value.trim().length)
-const model: string = 'tinyllama'
-const description: string = "The TinyLlama project is an open endeavor to train a compact 1.1B Llama model on 3 trillion tokens."
-
-const messages = ref<Message[]>([])
-
-const isLoading = ref(false)
-
-const ollamaRequest = async (input: string) => {
-  isLoading.value = true;
-
-
-  const resp = await questionOllama(
-    {
-      model: "tinyllama",
-      prompt: input,
-      stream: false,
-    })
-
-  isLoading.value = false;
-
-  messages.value.push({
-    role: 'agent',
-    content: resp.response
-  })
-}
 </script>
 
 <template>
-  <Card>
-    <CardHeader class="flex flex-row items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <Avatar>
-          <AvatarImage src="../src/assets/images/tinyllama.png" alt="Image" />
-          <AvatarFallback>tl</AvatarFallback>
-        </Avatar>
-        <div>
-          <p class="font-medium leading-none">
-            {{ model }}
-          </p>
-          <p class="text-sm text-muted-foreground">
-            {{ description }}
-          </p>
+  <SidebarProvider :style="{ '--sidebar-width': '19rem' }">
+    <AppSidebar />
+    <SidebarInset>
+      <header class="flex h-16 shrink-0 items-center gap-2 px-4">
+        <SidebarTrigger class="-ml-1" />
+        <Separator orientation="vertical" class="mr-2 h-4" />
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem class="hidden md:block">
+              <BreadcrumbLink href="#">
+                Building Your Application
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator class="hidden md:block" />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </header>
+      <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div class="grid auto-rows-min gap-4 py-2">
+          <CardComponent />
+          <!-- <div class="aspect-video rounded-xl bg-muted/50" />
+          <div class="aspect-video rounded-xl bg-muted/50" />
+          <div class="aspect-video rounded-xl bg-muted/50" /> -->
         </div>
+        <div class="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
       </div>
-    </CardHeader>
-    <CardContent>
-      <div class="space-y-4">
-        <div v-for="(message, index) in messages" :key="index" :class="cn(
-          'flex w-max max-w-[75%] flex-col gap-2 rounded-lg px-3 py-2 text-sm',
-          message.role === 'user' ? 'ml-auto bg-primary text-primary-foreground' : 'bg-muted',
-        )">
-          {{ message.content }}
-        </div>
-        <div v-if="isLoading" class="flex w-max max-w-[75%] items-center gap-2 rounded-lg px-3 py-2 text-sm bg-muted">
-          <LoaderCircle class="animate-spin w-4 h-4" />
-          <span class="text-muted-foreground">Thinking...</span>
-        </div>
-      </div>
-    </CardContent>
-    <CardFooter>
-      <form class="flex w-full items-center space-x-2" @submit.prevent="() => {
-        if (inputLength === 0) return
-        messages.push({
-          role: 'user',
-          content: input,
-        })
-        input = ''
-      }">
-        <Input v-model="input" placeholder="Type a message..." class="flex-1" />
-        <Button class="p-2.5 flex items-center justify-center" :disabled="inputLength === 0"
-          @click="ollamaRequest(input)">
-          <Send class="w-4 h-4" />
-          <span class="sr-only">Send</span>
-        </Button>
-      </form>
-    </CardFooter>
-  </Card>
+    </SidebarInset>
+  </SidebarProvider>
 </template>
