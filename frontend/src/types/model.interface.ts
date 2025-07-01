@@ -1,10 +1,10 @@
-export interface OllamaBody {
+export interface ModelBody {
     model: string,
     prompt: string,
     stream: boolean,
 }
 
-export interface OllamaResponse {
+export interface ModelResponse {
     $schema:              string;
     model:                string;
     created_at:           Date;

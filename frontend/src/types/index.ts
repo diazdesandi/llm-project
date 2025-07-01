@@ -1,2 +1,2 @@
-export type * from './ollama.interface';
+export type * from './model.interface';
 export type * from './chat.interface'
