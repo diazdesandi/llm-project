@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import ChatPage from '../pages/ChatPage.vue'
+import { AppSidebar } from '@/components/common'
+import { SidebarInset, SidebarProvider } from '@/components/ui'
 </script>
 
 <template>
-    <div class="flex min-h-svh flex-col items-center justify-center bg-muted p-6">
-        <div class="w-full max-w-sm md:max-w-3xl">
-            <ChatPage />
-        </div>
-    </div>
+    <SidebarProvider :style="{ '--sidebar-width': '19rem' }">
+        <AppSidebar />
+        <SidebarInset class="rounded-lg">
+            <div class="flex-1 overflow-auto">
+                <router-view />
+            </div>
+        </SidebarInset>
+    </SidebarProvider>
 </template>
+
