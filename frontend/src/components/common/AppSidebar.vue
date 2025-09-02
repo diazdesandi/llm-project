@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { Command, Settings, Inbox, } from 'lucide-vue-next'
 import { ref } from 'vue'
-import NavUser from './NavUser.vue';
+import { useRouter } from 'vue-router';
+import { Command, Settings, Inbox, } from 'lucide-vue-next'
 import {
-  Label,
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -16,7 +15,8 @@ import {
   SidebarMenuItem,
   type SidebarProps,
 } from '../ui'
-import { useRouter } from 'vue-router';
+import { useModelStore } from '@/stores/useModelStore';
+import NavUser from './NavUser.vue';
 import DarkModeButton from './DarkModeButton.vue';
 
 const props = withDefaults(defineProps<SidebarProps>(), {
@@ -49,6 +49,7 @@ const data = {
 }
 
 const activeItem = ref(data.navMain[0])
+const store = useModelStore()
 // const { setOpen } = useSidebar()
 
 const navigateTo = (url: string) => {
@@ -104,14 +105,21 @@ const navigateTo = (url: string) => {
           <div class="text-base font-medium text-foreground">
             {{ activeItem.title }}
           </div>
-          <Label class="flex items-center gap-2 text-sm">
-            <DarkModeButton />
-          </Label>
+          <DarkModeButton />
         </div>
         <SidebarInput placeholder="Type to search..." />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup class="px-0">
+          <SidebarGroupContent>
+            <a v-for="conversation in store.conversations" :key="conversation.id" href="#"
+              class="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <span class="font-medium">{{ conversation.title }}</span>
+              <span class="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
+                {{ conversation.messages[0].content }}
+              </span>
+            </a>
+          </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
