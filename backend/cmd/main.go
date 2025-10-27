@@ -1,57 +1,50 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
+	"time"
 
-	"github.com/danielgtaylor/huma/v2"
-	"github.com/danielgtaylor/huma/v2/adapters/humachi"
-	"github.com/danielgtaylor/huma/v2/humacli"
 	"github.com/diazdesandi/llm-project/backend/config"
-	"github.com/diazdesandi/llm-project/backend/internal/metrics"
-	"github.com/diazdesandi/llm-project/backend/internal/middlewares"
+	"github.com/diazdesandi/llm-project/backend/internal/container"
 	"github.com/diazdesandi/llm-project/backend/internal/routes"
-	"github.com/diazdesandi/llm-project/backend/pkg/logger"
-	"github.com/go-chi/chi/v5"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-
-	_ "github.com/danielgtaylor/huma/v2/formats/cbor"
+	"github.com/diazdesandi/llm-project/backend/internal/shared/metrics"
 )
-
-// Current code version
-var version = "1.0.0"
-
-// CLI Options
-// TODO: Check huma requires options
-type Options struct {
-	Port int `help:"Port to listen on" short:"p" default:"8080"`
-}
 
 func main() {
 	// Load configuration
 	config := config.LoadConfig()
-	l := logger.CreateLogger()
-	defer l.Sync()
 
 	// Initialize metrics
 	metrics.InitMetrics()
 
+	// Initalize App Container
+	container, err := container.NewAppContainer(config)
+	if err != nil {
+		panic(err)
+	}
 
-	cli := humacli.New(func(hooks humacli.Hooks, options *Options) {
+	defer container.Logger.Sync()
 
-		router := chi.NewMux()
-    	router.Use(middlewares.CORS)
-		api := humachi.New(router, huma.DefaultConfig("Backend - LLM", version))
-		routes.RegisterRoutes(api)
+	logger := container.Logger
 
-		// http://backend:8080/metrics
-    	router.Handle("/metrics", promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{}))
+	r := routes.SetupRoutes(*container.ModelHandler, *container.AuthHandler)
 
-		hooks.OnStart(func() {
-			fmt.Printf(("Starting server on port %s...\n"), config.Port)
-			http.ListenAndServe(fmt.Sprintf(":%s", config.Port), router)
-		})
-	})
+	server := &http.Server{
+		Addr:           ":" + config.Port,
+		Handler:        r,
+		ReadTimeout:    15 * time.Second,
+		WriteTimeout:   15 * time.Second,
+		IdleTimeout:    60 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
 
-	cli.Run()
+	// Start server
+	go func() {
+		logger.Info("Starting server on port " + config.Port)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("Failed to start server:" + err.Error())
+		}
+	}()
+
+	select {}
 }
