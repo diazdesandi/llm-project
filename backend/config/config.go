@@ -7,9 +7,11 @@ import (
 )
 
 type Config struct {
-	Port		string
-	DatabaseURL	string
-	OllamaURL	string
+	Port        string
+	OllamaURL   string
+	OllamaModel string
+	SupabaseURL string
+	SupabaseKey string
 }
 
 func LoadConfig() *Config {
@@ -17,8 +19,10 @@ func LoadConfig() *Config {
 
 	return &Config{
 		Port:        getEnv("PORT", "8080"),
-		DatabaseURL: getEnv("DATABASE_URL", "postgres://user:password@localhost:5432/dbname?sslmode=disable"),
 		OllamaURL:   getEnv("OLLAMA_URL", "http://localhost:11434"),
+		OllamaModel: getEnv("OLLAMA_MODEL", "tinyllama"),
+		SupabaseURL: getEnv("SUPABASE_URL", "https://your-supabase-url.supabase.co"),
+		SupabaseKey: getEnv("SUPABASE_KEY", "your-supabase-key"),
 	}
 }
 
