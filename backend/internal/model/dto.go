@@ -1,14 +1,14 @@
-package dto
+package model
 
 import "time"
 
-type OllamaRequest struct {
+type Request struct {
 	Model  string `json:"model" maxLength:"30" required:"true" example:"tinyllama:latest" default:"tinyllama"`
 	Prompt string `json:"prompt" required:"true" example:"Tell me an interesting fact about Tijuana, Mexico"`
 	Stream bool   `json:"stream" required:"true"`
 }
 
-type OllamaResponse struct {
+type Response struct {
 	Model              string    `json:"model"`
 	CreatedAt          time.Time `json:"created_at"`
 	Response           string    `json:"response"`
