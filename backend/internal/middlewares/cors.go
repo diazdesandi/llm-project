@@ -1,22 +1,28 @@
 package middlewares
 
 import (
-	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
 // CORS middleware to handle Cross-Origin Resource Sharing
-func CORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, X-CSRF-Token")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
+func CORS() gin.HandlerFunc {
+	return func(c *gin.Context) {
 
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
+		if c.Request.URL.Path == "/metrics" {
+			c.Next()
 			return
 		}
 
-		next.ServeHTTP(w, r)
-	})
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, X-CSRF-Token")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }
