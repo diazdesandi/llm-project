@@ -1,0 +1,127 @@
+services:
+  frontend:
+    image: llm-frontend:latest  # Usa la imagen construida por bake
+    env_file:
+      - .env
+    ports:
+      - "5173:5173"
+    volumes:                
+      - ../../frontend:/app
+      - /app/node_modules   
+      - /app/.bun       
+    depends_on:
+      - backend
+    networks:
+      - llmnet
+
+  backend:
+    image: llm-backend:latest  # Usa la imagen construida por bake
+    env_file:
+      - ../../backend/.env
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../../backend:/app      # Volumen necesario para air
+      - /app/tmp               # Excluir directorio tmp
+    environment:
+      - PORT=${PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - OLLAMA_URL=${OLLAMA_URL}
+    depends_on:
+      db:
+        condition: service_started
+      ollama:
+        condition: service_healthy
+    networks:
+      - llmnet
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_MODELS=${OLLAMA_MODELS}
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    entrypoint: 
+      - sh
+      - -c
+      - |
+        ollama serve &
+        SERVER_PID=$$!
+        echo 'Waiting for Ollama server to start...'
+        sleep 15
+        until ollama list >/dev/null 2>&1; do
+          echo 'Waiting for Ollama to be ready...'
+          sleep 2
+        done
+        if ! ollama list | grep -q tinyllama; then
+          echo 'Pulling tinyllama model...'
+          ollama pull tinyllama
+          echo 'Model pulled successfully!'
+        else
+          echo 'tinyllama model already exists, skipping pull'
+        fi
+        wait $$SERVER_PID
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    networks:
+      - llmnet
+
+  db:
+    image: postgres:15
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - llmnet
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    env_file:
+      - .env
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED}
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=${GF_AUTH_ANONYMOUS_ORG_ROLE}
+      - GF_AUTH_ANONYMOUS_ORG_NAME=${GF_AUTH_ANONYMOUS_ORG_NAME}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_SECURITY_ALLOW_EMBEDDING=${GF_SECURITY_ALLOW_EMBEDDING}
+      - GF_AUTH_DISABLE_LOGIN_FORM=${GF_AUTH_DISABLE_LOGIN_FORM}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../grafana/dashboards:/var/lib/grafana/dashboards
+      - ../grafana/datasources:/etc/grafana/provisioning/datasources
+      - ../grafana/datasources/dashboard-provider.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
+    networks:
+      - llmnet
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - llmnet
+
+volumes:
+  pgdata:
+  grafana-data:
+  ollama-data:
+
+networks:
+  llmnet:

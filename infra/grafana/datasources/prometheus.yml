@@ -1,0 +1,13 @@
+# ./infra/grafana/datasources/prometheus.yml
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    url: http://prometheus:9090  # Asume que tu servicio de Prometheus se llama 'prometheus' en la misma red
+    access: proxy
+    isDefault: true
+    uid: 'deoirun1ijjlsf' # UID que coincide con el dashboard
+    version: 1
+    editable: true
+    orgId: 1 # Asegurar que orgId tenga un valor
