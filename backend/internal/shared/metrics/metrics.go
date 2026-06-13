@@ -5,11 +5,11 @@ import (
 )
 
 // Reminder
-// Go uses mayuscules for public (exported) names and minuscules for private (internal) names.
+// Go uses caps for public (exported) names and minuscules for private (internal) names.
 
 // Define Prometheus metrics
 var (
-	// GOST service metrics
+	// GostServices metrics
 	GostServices = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "gost_services",

@@ -38,7 +38,11 @@ func (c *ClientContent) GetResponse(ctx context.Context, body *Request) (*Respon
 		return nil, fmt.Errorf("failed to perform request: %w", err)
 	}
 
-	defer response.Body.Close()
+	defer func() {
+		if err := response.Body.Close(); err != nil {
+			fmt.Println("failed to sync logger", err)
+		}
+	}()
 
 	respBody, err := io.ReadAll(response.Body)
 	if err != nil {

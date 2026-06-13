@@ -4,6 +4,7 @@ import (
 	"github.com/diazdesandi/llm-project/backend/config"
 	"github.com/diazdesandi/llm-project/backend/internal/auth"
 	"github.com/diazdesandi/llm-project/backend/internal/model"
+	"github.com/diazdesandi/llm-project/backend/pkg/logger"
 	supa "github.com/nedpals/supabase-go"
 	"go.uber.org/zap"
 )
@@ -17,7 +18,7 @@ type Container struct {
 func NewAppContainer(cfg *config.Config) (*Container, error) {
 
 	// Config
-	l, _ := zap.NewProduction()
+	l := logger.CreateLogger()
 	defaultModel := "tinyllama"
 
 	// Clients
@@ -33,7 +34,7 @@ func NewAppContainer(cfg *config.Config) (*Container, error) {
 
 	// Handlers
 	modelHandler := model.NewHandler(*modelService)
-	authHandler := &auth.Handler{Service: *authService}
+	authHandler := auth.NewHandler(*authService)
 
 	return &Container{
 		Logger:       l,

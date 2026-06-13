@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -8,29 +9,34 @@ import (
 	"github.com/diazdesandi/llm-project/backend/internal/container"
 	"github.com/diazdesandi/llm-project/backend/internal/routes"
 	"github.com/diazdesandi/llm-project/backend/internal/shared/metrics"
+	"go.uber.org/zap"
 )
 
 func main() {
 	// Load configuration
-	config := config.LoadConfig()
+	cfg := config.LoadConfig()
 
 	// Initialize metrics
 	metrics.InitMetrics()
 
-	// Initalize App Container
-	container, err := container.NewAppContainer(config)
+	// Initialize App Container
+	c, err := container.NewAppContainer(cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	defer container.Logger.Sync()
+	defer func() {
+		if err := c.Logger.Sync(); err != nil {
+			c.Logger.Error("Failed to sync logger", zap.Error(err))
+		}
+	}()
 
-	logger := container.Logger
+	logger := c.Logger
 
-	r := routes.SetupRoutes(*container.ModelHandler, *container.AuthHandler)
+	r := routes.SetupRoutes(*c.ModelHandler, *c.AuthHandler)
 
 	server := &http.Server{
-		Addr:           ":" + config.Port,
+		Addr:           ":" + cfg.Port,
 		Handler:        r,
 		ReadTimeout:    15 * time.Second,
 		WriteTimeout:   15 * time.Second,
@@ -40,8 +46,8 @@ func main() {
 
 	// Start server
 	go func() {
-		logger.Info("Starting server on port " + config.Port)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		logger.Info("Starting server on port " + cfg.Port)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("Failed to start server:" + err.Error())
 		}
 	}()

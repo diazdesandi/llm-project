@@ -98,7 +98,8 @@ const onSubmit = handleSubmit((values) => {
                   <Input type="text" placeholder="John Doe" v-bind="componentField" />
                 </FormControl>
                 <FormDescription>
-                  This is your public display name. It can be your real name or a pseudonym. You can only change this once
+                  This is your public display name. It can be your real name or a pseudonym. You can only change this
+                  once
                   every 30 days.
                 </FormDescription>
                 <FormMessage />
@@ -142,33 +143,6 @@ const onSubmit = handleSubmit((values) => {
                 <FormMessage />
               </FormItem>
             </FormField>
-
-            <!-- <div>
-              <FieldArray v-slot="{ fields, push }" name="urls">
-                <div v-for="(field, index) in fields" :key="`urls-${field.key}`">
-                  <FormField v-slot="{ componentField }" :name="`urls[${index}].value`">
-                    <FormItem>
-                      <FormLabel :class="cn(index !== 0 && 'sr-only')">
-                        URLs
-                      </FormLabel>
-                      <FormDescription :class="cn(index !== 0 && 'sr-only')">
-                        Add links to your website, blog, or social media profiles.
-                      </FormDescription>
-                      <div class="relative flex items-center">
-                        <FormControl>
-                          <Input type="url" v-bind="componentField" />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  </FormField>
-                </div>
-
-                <Button type="button" variant="outline" size="sm" class="text-xs w-20 mt-2" @click="push({ value: '' })">
-                  Add URL
-                </Button>
-              </FieldArray>
-            </div> -->
 
             <div class="flex gap-2 justify-start">
               <Button type="submit">

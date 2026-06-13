@@ -7,11 +7,11 @@ import (
 )
 
 type Config struct {
-	Port        string
-	OllamaURL   string
-	OllamaModel string
-	SupabaseURL string
-	SupabaseKey string
+	Port        string `json:"port,omitempty"`
+	OllamaURL   string `json:"ollama_url,omitempty"`
+	OllamaModel string `json:"ollama_model,omitempty"`
+	SupabaseURL string `json:"supabase_url,omitempty"`
+	SupabaseKey string `json:"supabase_key,omitempty"`
 }
 
 func LoadConfig() *Config {

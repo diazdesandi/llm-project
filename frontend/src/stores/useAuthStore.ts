@@ -10,7 +10,11 @@ export const useAuthStore = defineStore('authStore', {
     getters: {},
     actions: {
         async login() {
-            // Login
+            try {
+
+            } catch (error) {
+                
+            }
         },
         async signup() {
             // Signup
